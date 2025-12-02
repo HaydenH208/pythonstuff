@@ -1,48 +1,55 @@
-
 from flask import Flask, request
 
-#  RENDER Settings start command needs      gunicorn app:app
-
-# The Flask application object must be available at the top level
-app = Flask(__name__) 
-MAGIC_WORD = 'fred'
+# The Flask app must be top-level for Render (gunicorn app:app)
+app = Flask(__name__)
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    # Default message when first loading the page (GET request)
-    result = "<span style='color:red'> Try the magic word 'fred'</span>"
-    
-    # Logic for handling form submission (POST request)
-    if request.method == 'POST':
-        # Get the input text from the form data
-        my_input = request.form.get('myText01')
-        
-        if my_input == MAGIC_WORD:
-            result = "<b style='color:green'> Cool! </b>"
-        else:
-            result = "<span style='color:red'> Try the magic word 'fred'</span>"
+    # Default message on first load
+    result = "<span style='color:blue'>Enter a number to analyze it!</span>"
 
-    # HTML template with the dynamic result
-    html_content = f"""
+    if request.method == 'POST':
+        user_num = request.form.get('myNumber')
+
+        try:
+            n = float(user_num)
+
+            square = n ** 2
+            cube = n ** 3
+            even_odd = "even" if n % 2 == 0 else "odd"
+
+            result = f"""
+            <div style='color:green; margin-top:20px;'>
+                <b>Results for {n}:</b><br>
+                Square: {square}<br>
+                Cube: {cube}<br>
+                Even/Odd: {even_odd}
+            </div>
+            """
+        except:
+            result = "<span style='color:red'>Please enter a valid number!</span>"
+
+    # --- HTML page template ---
+    html_page = f"""
     <!DOCTYPE html>
     <html>
     <head>
-        <title>Browser Title</title>
+        <title>Number Analyzer</title>
     </head>
     <body>
-        <h3 align=center>Render-python-submit</h3>
-        <form action="/" method="post">
-            <label for="myText01">Enter Text:</label>
-            <input type="text" id="myText01" name="myText01">
-            <input type="submit" value="Submit">
+        <h2 align="center">Flask Number Analyzer</h2>
+        <form method="post" action="/">
+            <label for="myNumber">Enter a number:</label>
+            <input type="text" id="myNumber" name="myNumber">
+            <input type="submit" value="Analyze">
         </form>
         {result}
     </body>
     </html>
     """
-    return html_content
+    return html_page
 
-# --- REMOVE THIS BLOCK FOR PRODUCTION DEPLOYMENT ---
+# --- REMOVE FOR DEPLOY ---
 # if __name__ == '__main__':
 #     app.run(debug=True)
-# ----------------------------------------------------
+# -------------------------
